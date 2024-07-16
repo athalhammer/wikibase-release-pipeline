@@ -132,25 +132,46 @@ MW_SCRIPT_PATH=/w
 For more information on testing, see the [README](./test/README.md).
 
 
-## Release process
+## Making a new Release (Phabricator template)
+
+**Versioning**
 
 WBS Deploy and WBS images are released using this repository. The process involves updating all upstream component versions to be used, building images, testing all the images together and finally publishing them.
 
-### Release checklist Phabricator template
+#### WBS releases triggered by new MediaWIki releases:
 
-```
-- [ ] **Pending issues as subtasks**. If any open tickets need to be resolved and/or related changes need to be included in the release, add them as subtasks of this release ticket.
-- [ ] **To release breaking changes** as a new major version of WBS Deploy, create a new branch called `deploy-X`, where `X` is the new major version.
-- [ ] **Create a release PR** with the following changes targeting the appropriate `deploy-X` release branch.
-  - [ ] **Update `variables.env`** by adjusting WBS versions and upstream versions. You can find further instructions in the [variables.env](https://github.com/wmde/wikibase-release-pipeline/blob/main/variables.env) file itself.
-  - [ ] **Update `CHANGES.md`** by adding a section following the example of previous releases.
-  - [ ] **CI should be green**. Tests may need adjustments in order to pass for the new version. Minor releases are likely to pass without any adjustments. Try re-running tests on failure -- some specs may be flaky.
-- [ ] **Do a sanity check by manually reviewing a running instance using your build**. This can be done locally on your machine or on a public server. You can find built images from your release PR on the [GitHub Container Registry](https://github.com/wmde/wikibase-release-pipeline/pkgs/container/wikibase%2Fwikibase) tagged with `dev-BRANCHNAME`, e.g., `dev-releaseprep`. This tag can be used to set up an instance running your release PR version.
-- [ ] **Get two reviews on the release PR** so that it is ready to be merged. **Merging to `deploy-X` later will trigger the release to Docker Hub.** Do not merge yet!
-- [ ] **Prepare communication** by creating a [release announcement](https://drive.google.com/drive/folders/1kHhKKwHlwq_P9x4j8-UnzV72yq0AYpsZ) using a template.
-- [ ] **Coordinate with ComCom on timing the publication of the release**. Talk to SCoT (ComCom, technical writer) about this.
-- [ ] **Publish the release** by merging the release branch into the `deploy-X` branch. **ATTENTION: This will automatically push images to Docker Hub!**
-- [ ] **Merge back to main in a separate PR** from `deploy-X` to have adjustments to `CHANGES.md` and the like available on `main` too. Changes from `variables.env` should only be taken from a release of the latest version so that `main` always references the build of the latest components.
+**For the latest minor or major MediaWiki release:**
+
+- [ ] Update `variables.env`: Adjust WBS versions and upstream versions. You can find further instructions for this in the [variables.env](https://github.com/wmde/wikibase-release-pipeline/blob/main/variables.env) file itself.
+- [ ] Update `CHANGES.md`: Reflect the new version/s in a new section in this file following the example of previous MediaWiki-triggered releases.
+- [ ] Make sure tests are passing: Tests may need adjustments in order to pass for the new version. Minor releases are likely to pass without any adjustments. Try re-running tests on failure -- some specs may be flaky.
+- [ ] Complete all steps from the "All releases" below
+- [ ] Merge any non-version related changes from release branches back to `main`: Create a PR from `wbs-X` to `main` with any adjustments which should be brought back to the `main` branch from the release/s (e.g. `CHANGES.md`, etc). NOTE: Changes to `variables.env` should not be merged back, `main` should always reference the build of the latest components.
+
+**For minor version updates to supported MediaWiki versions:** Currently we support the last version of MediaWiki and the LTS version:**
+
+- [ ] Create a new `wbs-<major>.<minor>.0-prerelease` branch, with the major, minor versions reflecting the targeted new version.
+- [ ] Create a PR on Github from that branch to the `wbs-X` branch
+- [ ] Complete all steps from the "All releases" below
+- [ ] Merge any non-version related changes from release branches back to `main`: Create a PR from `wbs-X` to `main` with any adjustments which should be brought back to the `main` branch from the release/s (e.g. `CHANGES.md`, etc). NOTE: Changes to `variables.env` should not be merged back, `main` should always reference the build of the latest components.
+
+**Making a new release of WBS Images or WBS Deploy outside fo the MediaWiki release cycle:**
+
+- [ ] Create a new `<image-name>-image-<major>.<minor>.<patch>` or `deploy-<major>.<minor>.<patch>` branch with the `major`, `minor`, and `patch` version numbers reflecting the targeted new version.
+- [ ] Update the related version number in `variables.env` to the version to be released, according to [semver 2.0.0](https://semver.org/spec/v2.0.0.html)
+- [ ] Create a PR on Github for that branch to the `main` branch.
+- [ ] Continue with steps in "All Releases" below
+- [ ] Delete the `<image-name>-image-<major>.<minor>.<patch>` or `deploy-<major>.<minor>.<patch>` branch
+- [ ] Git tag the release with `<image-name>-image-<major>.<minor>.<patch>` or `deploy-<major>.<minor>.<patch>` and push the tag to Github
+
+**All releases:**
+
+- [ ] Create or update the related release tracking Phabricator ticket: Changes occurring in the release should be captured as subtasks of a ticket in Phabricator titled as "Release <major>.<minor>.0".
+- [ ] "Smoke test" the release by running Deploy against the latest built images: This can be done locally on your machine or on a public server. You can find built images from your release PR on the [GitHub Container Registry](https://github.com/wmde/wikibase-release-pipeline/pkgs/container/wikibase%2Fwikibase) tagged with `dev-BRANCHNAME`, e.g., `dev-releaseprep`. This tag can be used to set up an instance running your release PR version.
+- [ ] Update release branch according to input from PR review (do not merge branch)
+- [ ] Prepare communication by creating a [release announcement](https://drive.google.com/drive/folders/1kHhKKwHlwq_P9x4j8-UnzV72yq0AYpsZ) using the linked template.
+- [ ] Coordinate with ComCom on timing the publication of the release. Talk to SCoT (ComCom, technical writer) about this.
+- [ ] Publish the release by merging the PR. **ATTENTION: In the case of `wbs-X` branches This will automatically push images to Docker Hub!**
+- [ ] Put `main` branch into pre-release state:** Create a PR against `main` which change `VERSION` in `variables.env` to be `<current-major>.<current-minor+1>.0-alpha.0`
 
 You`re done. **Congratulations!**
-```
